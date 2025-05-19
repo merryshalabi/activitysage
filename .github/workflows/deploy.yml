@@ -1,4 +1,4 @@
-name: Deploy FastAPI backend
+name: Deploy FastAPI backend to EC2
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
+    - name: Checkout repo
       uses: actions/checkout@v4
 
     - name: Deploy to EC2 and restart service
@@ -18,36 +18,32 @@ jobs:
         EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
+        echo "🔐 Setting up SSH"
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-        # Send systemd service file to EC2
+        echo "📦 Sending systemd service file"
         scp -o StrictHostKeyChecking=no activitysage.service $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/
 
+        echo "🚀 Connecting to EC2"
         ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
           set -e
-        
-          echo "⚙️ Adding GitHub to known_hosts..."
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-        
-          echo "🚀 Cloning repo if not exists..."
-          if [ ! -d "activitysage" ]; then
-            git clone git@github.com:YOUR_USERNAME/activitysage.git
-          fi
-        
-          ...
-        EOF
 
-          echo "🚀 Cloning repo if not exists..."
+          echo "📦 Ensuring GitHub is trusted"
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+          echo "🧠 Cloning repo if it doesn't exist"
           if [ ! -d "activitysage" ]; then
             git clone git@github.com:YOUR_USERNAME/activitysage.git
           fi
 
           cd activitysage
+          echo "🔄 Pulling latest changes"
           git pull origin main
 
-          echo "🐍 Setting up virtualenv if missing..."
+          echo "🐍 Setting up virtualenv if needed"
           if [ ! -d "venv" ]; then
             python3 -m venv venv
           fi
@@ -56,11 +52,12 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-          echo "🔧 Installing systemd service..."
+          echo "🛠️ Installing systemd service"
           sudo cp ~/activitysage.service /etc/systemd/system/activitysage.service
           sudo systemctl daemon-reexec
           sudo systemctl daemon-reload
           sudo systemctl enable activitysage
           sudo systemctl restart activitysage
-          echo "✅ Service restarted successfully"
+
+          echo "✅ Deployment complete and service restarted"
         EOF
