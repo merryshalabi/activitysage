@@ -1,0 +1,55 @@
+name: Deploy FastAPI backend
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Deploy to EC2 and restart service
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+
+        # Send systemd service file to EC2
+        scp -o StrictHostKeyChecking=no activitysage.service $EC2_USERNAME@$EC2_HOST:/home/$EC2_USERNAME/
+
+        ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
+          set -e
+
+          echo "🚀 Cloning repo if not exists..."
+          if [ ! -d "activitysage-backend" ]; then
+            git clone https://github.com/YOUR_USERNAME/activitysage-backend.git
+          fi
+
+          cd activitysage-backend
+          git pull origin main
+
+          echo "🐍 Setting up virtualenv if missing..."
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
+
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+          echo "🔧 Installing systemd service..."
+          sudo cp ~/activitysage.service /etc/systemd/system/activitysage.service
+          sudo systemctl daemon-reexec
+          sudo systemctl daemon-reload
+          sudo systemctl enable activitysage
+          sudo systemctl restart activitysage
+          echo "✅ Service restarted successfully"
+        EOF
