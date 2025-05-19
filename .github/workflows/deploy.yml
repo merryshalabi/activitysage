@@ -29,11 +29,11 @@ jobs:
           set -e
 
           echo "🚀 Cloning repo if not exists..."
-          if [ ! -d "activitysage-backend" ]; then
+          if [ ! -d "activitysage" ]; then
             git clone https://github.com/YOUR_USERNAME/activitysage-backend.git
           fi
 
-          cd activitysage-backend
+          cd activitysage
           git pull origin main
 
           echo "🐍 Setting up virtualenv if missing..."
