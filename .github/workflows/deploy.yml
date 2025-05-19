@@ -27,6 +27,17 @@ jobs:
 
         ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
           set -e
+        
+          echo "⚙️ Adding GitHub to known_hosts..."
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        
+          echo "🚀 Cloning repo if not exists..."
+          if [ ! -d "activitysage" ]; then
+            git clone git@github.com:YOUR_USERNAME/activitysage.git
+          fi
+        
+          ...
+        EOF
 
           echo "🚀 Cloning repo if not exists..."
           if [ ! -d "activitysage" ]; then
