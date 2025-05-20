@@ -43,11 +43,16 @@ jobs:
           cd activitysage
           echo "🔄 Pulling latest changes"
           git pull origin main
-
+          
+          echo "🔧 Installing system dependencies"
+          sudo apt update
+          sudo apt install -y python3-venv python3-pip
+          
           echo "🐍 Setting up virtualenv if needed"
           if [ ! -d "venv" ]; then
             python3 -m venv venv
           fi
+
 
           source venv/bin/activate
           pip install --upgrade pip
