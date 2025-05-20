@@ -9,7 +9,7 @@ import json
 # 🔧 Set Ollama endpoint (your EC2 IP)
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://18.175.90.200").split(",")
 
 app = FastAPI()
 
