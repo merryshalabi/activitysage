@@ -36,7 +36,8 @@ jobs:
 
           echo "🧠 Cloning repo if it doesn't exist"
           if [ ! -d "activitysage" ]; then
-            git clone git@github.com:YOUR_USERNAME/activitysage.git
+            git clone https://github.com/merryshalabi/activitysage.git
+
           fi
 
           cd activitysage
