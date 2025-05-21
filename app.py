@@ -23,15 +23,28 @@ app.add_middleware(
 )
 
 @app.post("/suggest")
-async def suggest(people: str = Form(...), budget: str = Form(...),
-            mood: str = Form(...), environment: str = Form(...)):
-
+async def suggest(
+    people: str = Form(...),
+    budget: str = Form(...),
+    mood: str = Form(...),
+    environment: str = Form(...),
+    duration: str = Form(...),
+    time_of_day: str = Form(...),
+    age_group: str = Form(...),
+    interests: str = Form(...),
+    accessibility_needs: str = Form(""),
+    weather: str = Form("")
+):
     prompt = f"""
-    We are {people} people, our budget is {budget}, we feel {mood}, and want {environment} activities.
+    We are {people} people, feeling {mood}. Our budget is {budget}₪.
+    We prefer {environment} activities during the {time_of_day}, for around {duration}.
+    We are in the {age_group} age group and are interested in {interests}.
+    Current weather is {weather}. Accessibility needs: {accessibility_needs or 'none'}.
 
-    Suggest exactly 3 fun group activities that match these conditions.
+    Suggest exactly 3 personalized activity ideas in JSON format that suit our context.
+    Be creative, useful, and do not exceed the budget.
 
-    For each activity, respond in this JSON format:
+    Respond in this JSON format:
     [
       {{
         "title": "Name of the activity",
@@ -41,7 +54,7 @@ async def suggest(people: str = Form(...), budget: str = Form(...),
       ...
     ]
 
-    Only return the JSON list. Do not explain it.
+    Only return the JSON list. No explanations or extra text.
     """
 
     messages = [
@@ -50,35 +63,24 @@ async def suggest(people: str = Form(...), budget: str = Form(...),
     ]
 
     try:
-        print("🔄 Sending to Ollama (via Python client)...")
         start = time.time()
         response = chat(model="gemma3:1b", messages=messages)
         answer = response['message']['content']
-        print("✅ Ollama responded:", answer)
     except Exception as e:
-        print("❌ Ollama client error:", str(e))
         return JSONResponse(
             status_code=500,
             content={"error": f"Error talking to Ollama: {str(e)}"}
         )
 
-    # Try to parse the JSON
+    # Clean and parse JSON
+    cleaned = answer.strip()
+    if cleaned.startswith("```json"):
+        cleaned = cleaned.removeprefix("```json").strip()
+    if cleaned.endswith("```"):
+        cleaned = cleaned.removesuffix("```").strip()
+
     try:
-        # Clean answer by stripping ```json ... ``` wrapper if it exists
-        cleaned = answer.strip()
-        if cleaned.startswith("```json"):
-            cleaned = cleaned.removeprefix("```json").strip()
-        if cleaned.endswith("```"):
-            cleaned = cleaned.removesuffix("```").strip()
-
-        try:
-            suggestions = json.loads(cleaned)
-        except json.JSONDecodeError:
-            return JSONResponse(
-                status_code=500,
-                content={"error": f"Could not parse response: {answer}"}
-            )
-
+        suggestions = json.loads(cleaned)
     except json.JSONDecodeError:
         return JSONResponse(
             status_code=500,
