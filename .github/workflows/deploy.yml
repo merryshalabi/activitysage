@@ -35,12 +35,12 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
           echo "🧠 Cloning repo if it doesn't exist"
-          if [ ! -d "activitysage" ]; then
-            git clone https://github.com/merryshalabi/activitysage.git
+          if [ ! -d "activitysage-backend" ]; then
+            git clone https://github.com/merryshalabi/activitysage-backend.git
 
           fi
 
-          cd activitysage
+          cd activitysage-backend
           echo "🔄 Pulling latest changes"
           git pull origin main
           
