@@ -11,7 +11,9 @@ import json
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 CORS_ORIGINS = [
     "http://activitysage.fursa.click:3000",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://activitysage.fursa.click:5173"
 ]
 
 
