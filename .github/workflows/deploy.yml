@@ -56,7 +56,7 @@ jobs:
 
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --break-system-packages -r requirements.txt
 
           echo "🛠️ Installing systemd service"
           sudo cp ~/activitysage.service /etc/systemd/system/activitysage.service
