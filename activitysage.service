@@ -4,10 +4,10 @@ After=network.target
 
 [Service]
 User=ubuntu
-WorkingDirectory=/home/ubuntu/activitysage
+WorkingDirectory=/home/ubuntu/activitysage-backend
 Environment="OLLAMA_HOST=http://13.40.91.168:11434"
 Environment="CORS_ORIGINS=http://activitysage.fursa.click:3000"
-ExecStart=/home/ubuntu/activitysage/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
+ExecStart=/home/ubuntu/activitysage-backend/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=5
 KillSignal=SIGINT
